@@ -627,15 +627,14 @@ Proporciona en formato JSON estructurado:
 // 3. Document Scraper / SECOP Extractor
 app.post('/api/scraper/documents', async (req, res) => {
   try {
-    const { contractRef, captchaSolved, secopNoticeUid } = req.body;
-    if (!contractRef) {
-      return res.status(400).json({ error: 'contractRef is required' });
-    }
+    const { contractRef, captchaSolved, secopNoticeUid, contract: clientContract } = req.body;
+    const resolvedRef = contractRef || clientContract?.referencia_del_contrato || clientContract?.id_contrato || 'CTO-SECOP-2024';
 
-    // Find contract in cached or fallback
-    const contract = cachedContracts.find(c => c.referencia_del_contrato === contractRef) ||
-      FALLBACK_SECOP_CONTRACTS.find(c => c.referencia_del_contrato === contractRef) || {
-        referencia_del_contrato: contractRef,
+    // Find contract in passed body, cache or fallback
+    const contract = clientContract ||
+      cachedContracts.find(c => c.referencia_del_contrato === resolvedRef || c.id_contrato === resolvedRef) ||
+      FALLBACK_SECOP_CONTRACTS.find(c => c.referencia_del_contrato === resolvedRef || c.id_contrato === resolvedRef) || {
+        referencia_del_contrato: resolvedRef,
         nombre_entidad: 'Entidad de SECOP II',
         valor_del_contrato: 5000000000,
         valor_total_adiciones: 1200000000,
@@ -647,7 +646,7 @@ app.post('/api/scraper/documents', async (req, res) => {
 
     return res.json({
       success: true,
-      contractRef,
+      contractRef: resolvedRef,
       captchaVerified: !!captchaSolved,
       extractedAt: new Date().toISOString(),
       documentsCount: documents.length,

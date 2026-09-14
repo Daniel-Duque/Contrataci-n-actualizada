@@ -57,16 +57,19 @@ export interface ContractDocument {
   dataLakeUri?: string;
 }
 
+export interface RagSource {
+  docTitle: string;
+  category?: string;
+  page: number;
+  snippet: string;
+  relevanceScore?: number;
+}
+
 export interface RagMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  sources?: {
-    docTitle: string;
-    page: number;
-    snippet: string;
-    relevanceScore: number;
-  }[];
+  sources?: RagSource[];
   timestamp: string;
 }
 
