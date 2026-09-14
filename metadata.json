@@ -1,0 +1,6 @@
+{
+  "name": "FiscalSapo AI - Auditor de Contratos Públicos SECOP",
+  "description": "Plataforma de auditoría ciudadana, predicción de sobrecostos con IA y examinador RAG de contratos públicos de Colombia en SECOP y datos.gov.co.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
