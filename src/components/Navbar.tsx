@@ -6,6 +6,7 @@ interface NavbarProps {
   setActiveTab: (tab: 'fiscalsapo' | 'examinador') => void;
   selectedContractRef?: string;
   onOpenMLOps: () => void;
+  onOpenDeploymentLimits: () => void;
   onRefreshData: () => void;
   isRefreshing: boolean;
   isLiveSource: boolean;
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   selectedContractRef,
   onOpenMLOps,
+  onOpenDeploymentLimits,
   onRefreshData,
   isRefreshing,
   isLiveSource
@@ -89,10 +91,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="open-mlops-modal-btn"
               onClick={onOpenMLOps}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition-colors"
+              className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition-colors"
             >
               <Cpu className="h-3.5 w-3.5 text-emerald-400" />
-              <span>MLOps & DB Gratuita</span>
+              <span>MLOps & DB</span>
+            </button>
+
+            <button
+              id="open-deployment-limits-btn"
+              onClick={onOpenDeploymentLimits}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-700/60 shadow-sm transition-colors"
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Llaves & Límites</span>
             </button>
 
             <a
