@@ -13,7 +13,10 @@ import {
   Copy,
   ExternalLink,
   Terminal,
-  AlertTriangle
+  AlertTriangle,
+  Database,
+  GitBranch,
+  Layers
 } from 'lucide-react';
 
 interface ModalDeploymentLimitsProps {
@@ -22,7 +25,7 @@ interface ModalDeploymentLimitsProps {
 }
 
 export const ModalDeploymentLimits: React.FC<ModalDeploymentLimitsProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'404' | 'llaves' | 'limites' | 'tierra'>('404');
+  const [activeTab, setActiveTab] = useState<'404' | 'llaves' | 'limites' | 'tierra' | 'bd-gratis'>('bd-gratis');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -108,6 +111,17 @@ export const ModalDeploymentLimits: React.FC<ModalDeploymentLimitsProps> = ({ is
           >
             <HardDrive className="h-4 w-4 text-purple-600" />
             <span>Servidores en Tierra (On-Premise)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('bd-gratis')}
+            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-colors whitespace-nowrap ${
+              activeTab === 'bd-gratis'
+                ? 'border-emerald-600 text-emerald-700 bg-white'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Database className="h-4 w-4 text-emerald-600" />
+            <span>Base de Datos Gratuita & Branch Pruebas</span>
           </button>
         </div>
 
@@ -384,6 +398,174 @@ export const ModalDeploymentLimits: React.FC<ModalDeploymentLimitsProps> = ({ is
                   docker build -t fiscalsapo-app . && docker run -d -p 3000:3000 --env-file .env fiscalsapo-app
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 5: BASE DE DATOS GRATUITA & BRANCH DE PRUEBAS */}
+          {activeTab === 'bd-gratis' && (
+            <div className="space-y-6">
+              
+              {/* Sección 1: Branch de Pruebas */}
+              <div className="p-4 rounded-xl bg-slate-900 text-white border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <GitBranch className="h-5 w-5 text-emerald-400" />
+                    <span className="font-bold text-sm">1. Branch de Pruebas ('pruebas') Inicializado</span>
+                  </div>
+                  <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+                    Activo: git branch pruebas
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ya creamos el branch <code className="text-emerald-300 font-mono">pruebas</code> y generamos el commit con todos los cambios acumulados (failover híbrido, scoring de sobrecosto, esquema de base de datos y scripts).
+                </p>
+                
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>Para empujar este branch a tu repositorio en GitHub / GitLab:</span>
+                    <button
+                      onClick={() => copyToClipboard(`git remote add origin https://github.com/TU-USUARIO/TU-REPOSITORIO.git\ngit push -u origin pruebas`, 'git-push-cmd')}
+                      className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
+                    >
+                      {copiedKey === 'git-push-cmd' ? <CheckCircle2 className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      <span>Copiar comandos</span>
+                    </button>
+                  </div>
+                  <pre className="p-2.5 rounded bg-black/50 font-mono text-xs text-emerald-300 overflow-x-auto">
+{`git remote add origin https://github.com/TU-USUARIO/TU-REPOSITORIO.git
+git push -u origin pruebas`}
+                  </pre>
+                </div>
+              </div>
+
+              {/* Sección 2: Upgrade y Validación en Vercel */}
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Layers className="h-5 w-5 text-emerald-700" />
+                  <h4 className="font-bold text-emerald-950 text-sm">2. Cómo hacer el Upgrade y Test en Vercel antes de Producción</h4>
+                </div>
+                <ol className="text-xs text-emerald-900 space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>
+                    <strong>Vercel Preview Deployment Automático:</strong> Cuando subes el branch <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">pruebas</code> a GitHub, Vercel no toca tu producción. En su lugar, genera automáticamente un enlace de Preview aislado (ej: <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">https://fiscalsapo-git-pruebas-tuusuario.vercel.app</code>).
+                  </li>
+                  <li>
+                    <strong>Configuración de Variables de Entorno en Preview:</strong> En el panel de Vercel (<span className="italic">Project Settings → Environment Variables</span>), puedes marcar que <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">GEMINI_API_KEY</code> aplique específicamente para el entorno <strong>Preview</strong>.
+                  </li>
+                  <li>
+                    <strong>Prueba de Humo (Smoke Test):</strong> Ingresa a la URL de Preview generada por Vercel, verifica que los contratos carguen en modo cliente directo o backend y haz una pregunta en el chat RAG forense.
+                  </li>
+                  <li>
+                    <strong>Pase a Producción Seguro (Zero-Downtime):</strong> Si las pruebas en el branch de pruebas son satisfactorias, abres un <em>Pull Request</em> de <code className="font-mono">pruebas</code> hacia <code className="font-mono">main</code>. Al hacer <em>Merge</em>, Vercel actualiza tu dominio principal de forma instantánea.
+                  </li>
+                </ol>
+              </div>
+
+              {/* Sección 3: Opciones de Bases de Datos Gratuitas */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Database className="h-5 w-5 text-slate-800" />
+                  <h4 className="font-bold text-slate-900 text-sm">3. Cuatro Alternativas de Base de Datos 100% Gratuitas</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  {/* Opción A: Supabase */}
+                  <div className="p-3 rounded-xl border border-slate-200 bg-white shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">A. Supabase (PostgreSQL)</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded">500 MB Gratis</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      Base de datos relacional SQL completa. Ideal si deseas realizar consultas complejas (<code className="font-mono">JOIN</code>, filtros por contratistas o municipios). Incluye API REST instantánea.
+                    </p>
+                  </div>
+
+                  {/* Opción B: Cloud Firestore */}
+                  <div className="p-3 rounded-xl border border-slate-200 bg-white shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">B. Cloud Firestore (Firebase)</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded">1 GB Gratis</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      Plan Spark gratuito permanente (50.000 lecturas y 20.000 escrituras al día). Integrable con un clic en esta plataforma. Perfecto para almacenar contratos por llave <code className="font-mono">contracts/&#123;contractRef&#125;</code>.
+                    </p>
+                  </div>
+
+                  {/* Opción C: Turso */}
+                  <div className="p-3 rounded-xl border border-slate-200 bg-white shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">C. Turso (libSQL / SQLite Serverless)</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">9 GB Gratis</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      SQLite en el borde (Edge) ultra rápido con hasta 500 bases de datos en su plan gratuito. Diseñado específicamente para Serverless y Vercel.
+                    </p>
+                  </div>
+
+                  {/* Opción D: Navegador / LocalStorage */}
+                  <div className="p-3 rounded-xl border border-slate-200 bg-white shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">D. Local IndexedDB (Navegador)</span>
+                      <span className="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded">Ilimitado Local</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      Ya implementado en el código: almacena miles de contratos y predicciones directo en el navegador del usuario con cero costo de servidores o infraestructura.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sección 4: Esquema Consolidado SQL */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Terminal className="h-4 w-4 text-slate-700" />
+                    <span className="font-bold text-xs text-slate-900">4. Esquema SQL Consolidado (Llave Primaria + Predicciones)</span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(`CREATE TABLE IF NOT EXISTS contract_predictions (
+  contract_ref VARCHAR(120) PRIMARY KEY,
+  secop_notice_uid VARCHAR(120),
+  entity_name VARCHAR(255) NOT NULL,
+  entity_nit VARCHAR(60),
+  department VARCHAR(100),
+  contractor_name VARCHAR(255),
+  contractor_nit VARCHAR(60),
+  signing_date TIMESTAMP WITH TIME ZONE,
+  initial_value NUMERIC(18,2) NOT NULL,
+  total_additions NUMERIC(18,2) DEFAULT 0,
+  consolidated_value NUMERIC(18,2) NOT NULL,
+  additions_ratio NUMERIC(6,2),
+  overcost_score INTEGER NOT NULL,
+  overcost_risk_level VARCHAR(20) NOT NULL,
+  estimated_overcost_amount NUMERIC(18,2),
+  ml_confidence INTEGER,
+  anomaly_factors TEXT[],
+  source_url TEXT,
+  synced_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`, 'sql-schema-cmd')}
+                    className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold flex items-center space-x-1"
+                  >
+                    {copiedKey === 'sql-schema-cmd' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                    <span>Copiar DDL SQL</span>
+                  </button>
+                </div>
+                <pre className="p-3 rounded-xl bg-slate-900 text-emerald-300 font-mono text-[11px] overflow-x-auto">
+{`CREATE TABLE IF NOT EXISTS contract_predictions (
+  contract_ref VARCHAR(120) PRIMARY KEY, -- Llave oficial SECOP (Ej: CTO-IDU-1482-2024)
+  entity_name VARCHAR(255) NOT NULL,
+  contractor_name VARCHAR(255),
+  initial_value NUMERIC(18,2) NOT NULL,
+  total_additions NUMERIC(18,2) DEFAULT 0,
+  consolidated_value NUMERIC(18,2) NOT NULL,
+  additions_ratio NUMERIC(6,2), -- % Adición sobre el contrato
+  overcost_score INTEGER NOT NULL, -- Score de riesgo 0-100
+  overcost_risk_level VARCHAR(20) NOT NULL, -- Bajo, Medio, Alto, Crítico
+  anomaly_factors TEXT[], -- Alertas detectadas
+  synced_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`}
+                </pre>
+              </div>
+
             </div>
           )}
 

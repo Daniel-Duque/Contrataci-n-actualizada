@@ -94,3 +94,38 @@ export interface DataLakeStats {
   freeTierLimitMB: number;
   lastSync: string;
 }
+
+/**
+ * Lean schema optimized for free-tier databases (Firestore, Supabase, Turso, SQLite).
+ * Stores only primary key, essential entity identifiers, and predicted ML/forensic values.
+ */
+export interface ContractPredictionRecord {
+  // Primary Key (Clave primaria única)
+  contractRef: string;
+  secopNoticeUid?: string;
+
+  // Metadata esencial
+  entityName: string;
+  entityNit?: string;
+  department: string;
+  contractorName: string;
+  contractorNit?: string;
+  signingDate?: string;
+
+  // Valores financieros oficiales
+  initialValue: number;
+  totalAdditions: number;
+  consolidatedValue: number;
+  additionsRatio: number;
+
+  // Valores Predichos por Modelo ML & Heurística Forense
+  overcostScore: number; // 0 - 100
+  overcostRiskLevel: 'Bajo' | 'Medio' | 'Alto' | 'Crítico';
+  estimatedOvercostAmount: number;
+  mlConfidence: number;
+  anomalyFactors: string[];
+
+  // Auditoría y sincronización
+  sourceUrl?: string;
+  syncedAt: string;
+}
